@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"os"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -9,14 +10,26 @@ import (
 
 func JWTAuth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		cookie := c.Cookies("AppsIDesaCookie")
-		if cookie == "" {
+		var tokenString string
+
+		// 1. Check Authorization: Bearer <token> header first (cross-origin / Flutter web on Vercel)
+		authHeader := c.Get("Authorization")
+		if strings.HasPrefix(authHeader, "Bearer ") {
+			tokenString = strings.TrimPrefix(authHeader, "Bearer ")
+		}
+
+		// 2. Fall back to cookie (Postman / same-origin browser)
+		if tokenString == "" {
+			tokenString = c.Cookies("AppsIDesaCookie")
+		}
+
+		if tokenString == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"message": "Unauthorized: No token provided",
 			})
 		}
 
-		token, err := jwt.Parse(cookie, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fiber.NewError(fiber.StatusUnauthorized, "Invalid token")
 			}

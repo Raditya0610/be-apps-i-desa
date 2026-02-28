@@ -5,6 +5,7 @@ import (
 
 	"Apps-I_Desa_Backend/dtos"
 	"Apps-I_Desa_Backend/services"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
@@ -78,9 +79,9 @@ func (c *AuthController) Login(ctx *fiber.Ctx) error {
 		Value:    response.Token,
 		MaxAge:   3600, // 1 hour
 		Expires:  time.Now().Add(time.Hour),
-		Secure:   false, // set true in production with HTTPS
+		Secure:   true, // Required for SameSite=None over HTTPS
 		HTTPOnly: true,
-		SameSite: "Lax",
+		SameSite: "None", // Required for cross-origin cookies
 	}
 
 	ctx.Cookie(&cookie)
@@ -97,9 +98,9 @@ func (c *AuthController) Logout(ctx *fiber.Ctx) error {
 		Value:    "",
 		MaxAge:   -1,
 		Expires:  time.Unix(0, 0),
-		Secure:   false,
+		Secure:   true,
 		HTTPOnly: true,
-		SameSite: "Lax",
+		SameSite: "None",
 	})
 
 	return ctx.Status(fiber.StatusOK).JSON(response)

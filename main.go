@@ -8,6 +8,7 @@ import (
 
 	"Apps-I_Desa_Backend/config"
 	"Apps-I_Desa_Backend/routes"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -38,7 +39,20 @@ func main() {
 
 	app.Use(logger.New())
 	app.Use(recover.New())
-	app.Use(cors.New())
+
+	// Read allowed origins from env (comma-separated), fallback to wildcard for local dev
+	allowedOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")
+	if allowedOrigins == "" {
+		allowedOrigins = "*"
+	}
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     allowedOrigins,
+		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS,PATCH",
+		AllowHeaders:     "Origin,Content-Type,Accept,Authorization,Cookie",
+		AllowCredentials: true,
+		ExposeHeaders:    "Set-Cookie",
+	}))
 
 	setupRoutes(app)
 

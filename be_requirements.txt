@@ -1,0 +1,278 @@
+/auth:
+ /login POST: (done belum di test)
+  username
+  password
+ /logout POST (done belum di test)
+/register POST (done belum di test)
+ username
+ password
+/dashboard GET (blm)
+ totalKK
+ totalPenduduk
+ skorSDG
+ pelayananDasar
+ sosial
+ ekonomi
+ lingkungan
+ aksesibilitas
+ tataKelola
+/kartukeluarga (blm)
+ /add POST
+  nik
+      GET
+  nik
+
+database
+
+villages one to many users
+villages one to many villagers
+family_cards one to many villagers
+villages one to many family_cards
+villages one to many sub_dimensi_pendidkan
+villages one to many sub_dimensi_kesehatan
+villages one to many sub_dimensi_utilitas_dasar
+villages one to many sub_dimensi_aktivitas
+villages one to many sub_dimensi_fasilitas_masyarakat
+villages one to many sub_dimensi_produksi_desa
+villages one to many sub_dimensi_fasilitas_pendukung_ekonomi
+villages one to many sub_dimensi_pengelolaan_lingkungan
+villages one to many sub_dimensi_penanggulangan_bencana
+villages one to many sub_dimensi_kondisi_akses_jalan
+villages one to many sub_dimensi_kemudahan_akses
+villages one to many sub_dimensi_kelembagaan_pelayanan_desa
+villages one to many sub_dimensi_tata_kelola_keuangan_desa
+
+table users
+username varchar pk
+password varchar
+village uuid
+
+table villages
+id uuid pk
+nama varchar
+
+table villager
+nik unique pk
+nama_lengkap varchar
+jenis_kelamin varchar
+tempat_lahir varchar
+tanggal_lahir date
+agama varchar
+pendidikan varchar
+pekerjaan varchar
+status_perkawinan varchar
+status_hubungan varchar
+kewarganegaraan varchar
+nomor_paspor optional
+nomor_kitas optional
+nama_ayah varchar
+nama_ibu varchar
+village uuid
+family_cardID varchar
+
+table family_cards
+nik varchar pk
+nama_kepala varchar
+alamat varchar
+rt varchar
+rw varchar
+kelurahan varchar
+kecamatan varchar
+kabupaten_kota varchar
+kode_pos varchar
+provinsi varchar
+village uuid
+
+table sub_dimensi_pendidkan
+id uuid pk
+village uuid
+year int optional
+ketersediaan_paud varchar
+kemudahan_akses_paud varchar
+apm_paud varchar
+ketersediaan_sd varchar
+kemudahan_akses_sd varchar
+apm_sd varchar
+ketersediaan_smp varchar
+kemudahan_akses_smp varchar
+apm_smp varchar
+ketersediaan_sma varchar
+kemudahan_akses_sma varchar
+apm_sma varchar
+
+table sub_dimensi_kesehatan
+id uuid pk
+village uuid
+year int optional
+kemudahan_akses_sarana_kesehatan varchar
+ketersediaan_sarana_kesehatan varchar
+kemudahan_akses_fasilitas_kesehatan varchar
+ketersediaan_posyandu varchar
+jumlah_aktivitas_posyandu varchar
+kemudahan_akses_posyandu varchar
+ketersediaan_layanan_dokter varchar
+hari_operasional_layanan_dokter varchar
+penyedia_layanan_dokter varchar
+penyedia_transportasi_layanan_dokter varchar
+ketersediaan_layanan_bidan varchar
+hari_operasional_layanan_bidan varchar
+penyedia_layanan_bidan varchar
+penyedia_transportasi_layanan_bidan varchar
+ketersediaan_layanan_tenaga_kesehatan varchar
+hari_operasional_layanan_tenaga_kesehatan varchar
+penyedia_layanan_tenaga_kesehatan varchar
+penyedia_transportasi_layanan_tenaga_kesehatan varchar
+persentase_peserta_jaminan_kesehatan varchar
+kegiatan_sosialisasi_jaminan_kesehatan varchar
+
+table sub_dimensi_utilitas_dasar
+id uuid pk
+village uuid
+year int optional
+operasional_air_minum varchar
+ketersediaan_air_minum varchar
+kemudahan_akses_air_minum varchar
+kualitas_air_minum varchar
+persentase_rumah_tidak_layak_huni varchar
+
+table sub_dimensi_aktivitas
+id uuid pk
+village uuid
+year int optional
+kearifan_sosial varchar
+kearifan_sosial_dipertahankan varchar
+kegiatan_goyong_royong varchar
+frekuensi_gotong_royong varchar
+keterlibatan_warga_gotong_royong varchar
+frekuensi_kegiatan_olahraga varchar
+penyelesaian_konflik_secara_damai varchar
+peran_aparat_keamanan_mediator varchar
+peran_aparat_pemerintah varchar
+peran_tokoh_masyarakat varchar
+peran_tokoh_agama
+satuan_keamanan_lingkungan
+aktivitas_satuan_keamanan_lingkungan varchar
+
+table sub_dimensi_fasilitas_masyarakat
+id uuid pk
+village uuid
+year int optional
+terdapat_taman_bacaan_masyarakat varchar
+hari_operasional_taman_bacaan_masyarakat varchar
+ketersediaan_fasilitas_olahraga varchar
+keberadaan_ruang_publik_terbuka varchar
+
+table sub_dimensi_produksi_desa
+id uuid pk
+village uuid
+year int optional
+keragaman_aktivitas_ekonomi varchar
+keaktifan_aktivitas_ekonomi varchar
+ketersediaan_produk_unggulan_desa varchar
+cakupan_pasar_produk_unggulan varchar
+ketersediaan_merek_dagang varchar
+terdapat_kearifan_lokal_ekonomi varchar
+telah_dilakukan_kerja_sama_dengan_desa_lainnya varchar
+telah_dilakukan_kerja_sama_dengan_pihak_ketiga varchar
+
+table sub_dimensi_fasilitas_pendukung_ekonomi
+id uuid pk
+village uuid
+year int optional
+ketersediaan_pendidikan_non_formal varchar
+keterlibatan_pendidikan_non_formal varchar
+ketersediaan_pasar_rakyat varchar
+kemudahan_akses_pasar_rakyat varchar
+ketersediaan_toko varchar
+kmudahan_akses_toko varchar
+ketersediaan_rumah_makan varchar
+kemudahan_akses_rumah_makan varchar
+ketersediaan_penginapan varchar
+kemudahan_akses_penginapan varchar
+ketersediaan_logistik varchar
+kemudahan_akses_logistik varchar
+terdapat_bumd varchar
+bumd_berbadan_hukum varchar
+hari_operasional_lembaga_ekonomi varchar
+ketersediaan_lembaga_ekonomi_lainnya varchar
+ketersediaan_kud varchar
+ketersediaan_umkm varchar
+layanan_perbankan varchar
+hari_operasional_keuangan varchar
+layanan_fasilitas_kredit_kur varchar
+layanan_fasilitas_kredit_kkp-e varchar
+layanan_fasilitas_kredit_kuk varchar
+status_layanan_fasilitas_kredit varchar
+
+table sub_dimensi_pengelolaan_lingkungan
+id uuid pk
+village uuid
+year int optional
+upaya_menjaga_kelestarian_lingkungan varchar
+regulasi_pelestarian_lingkungan varchar
+kegiatan_pelestarian_lingkungan varchar
+pemanfaatan_energi_terbarukan varchar
+tempat_pembuanangan_sampah varchar
+pengelolaan_sampah varchar
+pemanfaatan_sampah varchar
+kejadian_pencemaran_lingkungan varchar
+ketersediaan_jamban varchar
+keberfungsian_jamban varchar
+ketersediaan_septic_tank varchar
+pembuangan_air_limbah_cair_rumah varchar
+
+table sub_dimensi_penanggulangan_bencana
+id uuid pk
+village uuid
+year int optional
+aspek_informasi_kebencanaan varchar
+fasilitas_mitigasi_bencana varchar
+akses_menuju_fasilitas_mitigasi_bencana varchar
+aktivitas_mitigasi varchar
+fasilitas_tanggap_darurat_bencana varchar
+
+table sub_dimensi_kondisi_akses_jalan
+id uuid pk
+village uuid
+year int optional
+jenis_permukaan_jalan varchar
+kualitas_jalan varchar
+penerangan_jalan_utama varchar
+operasional_pju varchar
+
+table sub_dimensi_kemudahan_akses
+id uuid pk
+village uuid
+year int optional
+angkutan_perdesaan varchar
+operasional_angkutan_perdesaan varchar
+pelayanan_listrik varchar
+durasi_layanan_listrik varchar
+akses_telepon varchar
+akses_internet varchar
+
+table sub_dimensi_kelembagaan_pelayanan_desa
+id uuid pk
+village uuid
+year int optional
+layanan_diberikan varchar
+publikasi_informasi_pelayanan varchar
+pelayanan_administrasi varchar
+pelayanan_pengaduan varchar
+pelayanan_lainnya varchar
+musyawarah_desa varchar
+musyawarah_desa_dihadiri_unsur_masyarakat varchar
+
+table sub_dimensi_tata_kelola_keuangan_desa
+id uuid pk
+village uuid
+year int optional
+pendapatan_asli_desa varchar
+peningkatan_pades varchar
+penyertaan_modal_dd_bumd varchar
+aset_tanah_desa varchar
+aset_kantor_desa varchar
+aset_pasar_desa varchar
+aset_lainnya varchar
+produktivitas_aset_desa varchar
+inventarisasi_aset_desa varchar

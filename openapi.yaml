@@ -1,0 +1,2119 @@
+openapi: 3.0.3
+info:
+  title: Apps I-Desa Backend API
+  version: 1.0.0
+  contact:
+    name: Apps I-Desa Team
+    url: https://github.com/mfachrizalg/Apps-I_Desa_Backend
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://be-apps-i-desa.vercel.app/
+    description: Production server
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: AppsIDesaCookie
+      description: Cookie-based authentication using JWT token
+
+  schemas:
+    # Common Response Schemas
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Response message
+          example: Operation successful
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: An error occurred
+        error:
+          type: string
+          description: Error details
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Validation failed
+        error:
+          type: string
+          description: Validation error details
+
+    # Auth DTOs
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: User's username
+          example: admin
+        password:
+          type: string
+          format: password
+          description: User's password
+          example: password123
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT token for authentication
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        message:
+          type: string
+          description: Response message
+          example: Login successful
+
+    # User DTOs
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - password
+        - village_id
+      properties:
+        username:
+          type: string
+          description: Unique username
+          example: admin
+        password:
+          type: string
+          format: password
+          description: User password
+          example: password123
+        village_id:
+          type: string
+          format: uuid
+          description: Village UUID
+          example: 550e8400-e29b-41d4-a716-446655440000
+
+    # Village DTOs
+    AddVillageRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Village name
+          example: Desa Sukamaju
+
+    CreateVillageResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Village UUID
+          example: 550e8400-e29b-41d4-a716-446655440000
+        name:
+          type: string
+          description: Village name
+          example: Desa Sukamaju
+        message:
+          type: string
+          description: Response message
+          example: Village created successfully
+
+    # Family Card DTOs
+    AddFamilyCardRequest:
+      type: object
+      required:
+        - nik
+        - address
+        - rt
+        - rw
+        - kelurahan
+        - kecamatan
+        - kabupaten_kota
+        - kode_pos
+        - provinsi
+      properties:
+        nik:
+          type: string
+          pattern: '^[0-9]{16}$'
+          description: Family card number (16 digits)
+          example: "3201234567890001"
+        address:
+          type: string
+          description: Complete address
+          example: "Jl. Merdeka No. 123"
+        rt:
+          type: string
+          description: RT number
+          example: "001"
+        rw:
+          type: string
+          description: RW number
+          example: "002"
+        kelurahan:
+          type: string
+          description: Village/Kelurahan name
+          example: Sukamaju
+        kecamatan:
+          type: string
+          description: Sub-district name
+          example: Kecamatan Tengah
+        kabupaten_kota:
+          type: string
+          description: Regency/City name
+          example: Kabupaten Sukses
+        kode_pos:
+          type: string
+          description: Postal code
+          example: "12345"
+        provinsi:
+          type: string
+          description: Province name
+          example: Jawa Barat
+
+    GetFamilyCardResponse:
+      type: object
+      properties:
+        nik:
+          type: string
+          description: Family card NIK
+          example: "3201234567890001"
+        name:
+          type: string
+          nullable: true
+          description: Head of family name
+          example: John Doe
+        total_members:
+          type: integer
+          description: Total family members
+          example: 4
+
+    GetAllFamilyCardsResponse:
+      type: object
+      properties:
+        family_cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/GetFamilyCardResponse'
+
+    GetFamilyMember:
+      type: object
+      properties:
+        nik:
+          type: string
+          pattern: '^[0-9]{16}$'
+          description: 16-digit National ID Number
+          example: "3201234567890001"
+        name:
+          type: string
+          description: Full name
+          example: John Doe
+        status_hubungan:
+          type: string
+          description: Family relationship
+          example: Kepala Keluarga
+        age:
+          type: integer
+          description: Age in years
+          example: 35
+        jenis_kelamin:
+          type: string
+          description: Gender
+          example: L
+        pendidikan:
+          type: string
+          description: Education level
+          example: S1
+        pekerjaan:
+          type: string
+          description: Occupation
+          example: PNS
+
+    GetAllFamilyMember:
+      type: object
+      properties:
+        nik:
+          type: string
+          description: Family card NIK
+          example: "3201234567890001"
+        address:
+          type: string
+          description: Family address
+          example: "Jl. Merdeka No. 123"
+        family_members:
+          type: array
+          items:
+            $ref: '#/components/schemas/GetFamilyMember'
+
+    # Villager DTOs
+    AddVillagerRequest:
+      type: object
+      required:
+        - nik
+        - nama_lengkap
+        - jenis_kelamin
+        - tempat_lahir
+        - tanggal_lahir
+        - agama
+        - pendidikan
+        - pekerjaan
+        - status_perkawinan
+        - status_hubungan
+        - kewarganegaraan
+        - nama_ayah
+        - nama_ibu
+        - family_card_id
+      properties:
+        nik:
+          type: string
+          pattern: '^[0-9]{16}$'
+          description: 16-digit National ID Number
+          example: "3201234567890001"
+        nama_lengkap:
+          type: string
+          description: Full name of villager
+          example: John Doe
+        jenis_kelamin:
+          type: string
+          description: Gender
+          enum: [L, P]
+          example: L
+        tempat_lahir:
+          type: string
+          description: Place of birth
+          example: Jakarta
+        tanggal_lahir:
+          type: string
+          format: date
+          description: Date of birth (YYYY-MM-DD)
+          example: "1990-01-15"
+        agama:
+          type: string
+          description: Religion
+          example: Islam
+        pendidikan:
+          type: string
+          description: Education level
+          example: S1
+        pekerjaan:
+          type: string
+          description: Occupation
+          example: PNS
+        status_perkawinan:
+          type: string
+          description: Marital status
+          example: Kawin
+        status_hubungan:
+          type: string
+          description: Family relationship status
+          example: Kepala Keluarga
+        kewarganegaraan:
+          type: string
+          description: Citizenship
+          example: WNI
+        nomor_paspor:
+          type: string
+          nullable: true
+          description: Passport number (optional)
+          example: null
+        nomor_kitas:
+          type: string
+          nullable: true
+          description: KITAS number (optional)
+          example: null
+        nama_ayah:
+          type: string
+          description: Father's name
+          example: John Sr.
+        nama_ibu:
+          type: string
+          description: Mother's name
+          example: Jane Doe
+        family_card_id:
+          type: string
+          description: Family card ID
+          example: "3201234567890001"
+
+    GetVillagerResponse:
+      type: object
+      properties:
+        nik:
+          type: string
+          pattern: '^[0-9]{16}$'
+          description: 16-digit National ID Number
+          example: "3201234567890001"
+        nama_lengkap:
+          type: string
+          description: Full name of villager
+          example: John Doe
+        jenis_kelamin:
+          type: string
+          description: Gender
+          example: L
+        tempat_lahir:
+          type: string
+          description: Place of birth
+          example: Jakarta
+        tanggal_lahir:
+          type: string
+          description: Date of birth
+          example: "1990-01-15"
+        agama:
+          type: string
+          description: Religion
+          example: Islam
+        pendidikan:
+          type: string
+          description: Education level
+          example: S1
+        pekerjaan:
+          type: string
+          description: Occupation
+          example: PNS
+        status_perkawinan:
+          type: string
+          description: Marital status
+          example: Kawin
+        status_hubungan:
+          type: string
+          description: Family relationship status
+          example: Kepala Keluarga
+        kewarganegaraan:
+          type: string
+          description: Citizenship
+          example: WNI
+        nomor_paspor:
+          type: string
+          nullable: true
+          description: Passport number (optional)
+          example: null
+        nomor_kitas:
+          type: string
+          nullable: true
+          description: KITAS number (optional)
+          example: null
+        nama_ayah:
+          type: string
+          description: Father's name
+          example: John Sr.
+        nama_ibu:
+          type: string
+          description: Mother's name
+          example: Jane Doe
+        family_card_id:
+          type: string
+          description: Family card ID
+          example: "3201234567890001"
+        village_id:
+          type: string
+          description: Village ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+    UpdateVillagerRequest:
+      type: object
+      properties:
+        nik:
+          type: string
+          pattern: '^[0-9]{16}$'
+          description: 16-digit National ID Number
+          nullable: true
+          example: "3201234567890001"
+        nama_lengkap:
+          type: string
+          description: Full name of villager
+          nullable: true
+          example: John Doe
+        jenis_kelamin:
+          type: string
+          enum: [L, P]
+          description: Gender
+          nullable: true
+          example: L
+        tempat_lahir:
+          type: string
+          description: Place of birth
+          nullable: true
+          example: Jakarta
+        tanggal_lahir:
+          type: string
+          format: date
+          description: Date of birth (YYYY-MM-DD)
+          nullable: true
+          example: "1990-01-15"
+        agama:
+          type: string
+          description: Religion
+          nullable: true
+          example: Islam
+        pendidikan:
+          type: string
+          description: Education level
+          nullable: true
+          example: S1
+        pekerjaan:
+          type: string
+          description: Occupation
+          nullable: true
+          example: PNS
+        status_perkawinan:
+          type: string
+          description: Marital status
+          nullable: true
+          example: Kawin
+        status_hubungan:
+          type: string
+          description: Family relationship status
+          nullable: true
+          example: Kepala Keluarga
+        kewarganegaraan:
+          type: string
+          description: Citizenship
+          nullable: true
+          example: WNI
+        nomor_paspor:
+          type: string
+          description: Passport number
+          nullable: true
+          example: null
+        nomor_kitas:
+          type: string
+          description: KITAS number
+          nullable: true
+          example: null
+        nama_ayah:
+          type: string
+          description: Father's name
+          nullable: true
+          example: John Sr.
+        nama_ibu:
+          type: string
+          description: Mother's name
+          nullable: true
+          example: Jane Doe
+
+    # Sub-Dimension DTOs
+    AddSubDimensionPendidikanRequest:
+      type: object
+      required:
+        - ketersediaan_paud
+        - kemudahan_akses_paud
+        - apm_paud
+        - kemudahan_akses_sd
+        - apm_sd
+        - kemudahan_akses_smp
+        - apm_smp
+        - kemudahan_akses_sma
+        - apm_sma
+      properties:
+        ketersediaan_paud:
+          type: string
+          description: Availability of early childhood education
+          example: "Ada"
+        kemudahan_akses_paud:
+          type: string
+          description: Ease of access to early childhood education
+          example: "Mudah"
+        apm_paud:
+          type: string
+          description: Gross enrollment rate for early childhood education
+          example: "80%"
+        kemudahan_akses_sd:
+          type: string
+          description: Ease of access to elementary school
+          example: "Mudah"
+        apm_sd:
+          type: string
+          description: Gross enrollment rate for elementary school
+          example: "95%"
+        kemudahan_akses_smp:
+          type: string
+          description: Ease of access to junior high school
+          example: "Mudah"
+        apm_smp:
+          type: string
+          description: Gross enrollment rate for junior high school
+          example: "90%"
+        kemudahan_akses_sma:
+          type: string
+          description: Ease of access to senior high school
+          example: "Mudah"
+        apm_sma:
+          type: string
+          description: Gross enrollment rate for senior high school
+          example: "85%"
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Year of data
+          example: 2024
+
+    AddSubDimensionKesehatanRequest:
+      type: object
+      required:
+        - kemudahan_akses_sarana_kesehatan
+        - ketersediaan_fasilitas_kesehatan
+        - kemudahan_akses_fasilitas_kesehatan
+        - ketersediaan_posyandu
+        - jumlah_aktivitas_posyandu
+        - kemudahan_akses_posyandu
+        - ketersediaan_layanan_dokter
+        - hari_operasional_layanan_dokter
+        - penyedia_layanan_dokter
+        - penyedia_transportasi_layanan_dokter
+        - ketersediaan_layanan_bidan
+        - hari_operasional_layanan_bidan
+        - penyedia_layanan_bidan
+        - penyedia_transportasi_layanan_bidan
+        - ketersediaan_layanan_tenaga_kesehatan
+        - hari_operasional_layanan_tenaga_kesehatan
+        - penyedia_layanan_tenaga_kesehatan
+        - penyedia_transportasi_layanan_tenaga_kesehatan
+        - persentase_peserta_jaminan_kesehatan
+        - kegiatan_sosialisasi_jaminan_kesehatan
+      properties:
+        kemudahan_akses_sarana_kesehatan:
+          type: string
+          example: "Mudah"
+        ketersediaan_fasilitas_kesehatan:
+          type: string
+          example: "Ada"
+        kemudahan_akses_fasilitas_kesehatan:
+          type: string
+          example: "Mudah"
+        ketersediaan_posyandu:
+          type: string
+          example: "Ada"
+        jumlah_aktivitas_posyandu:
+          type: string
+          example: "12 kali/tahun"
+        kemudahan_akses_posyandu:
+          type: string
+          example: "Mudah"
+        ketersediaan_layanan_dokter:
+          type: string
+          example: "Ada"
+        hari_operasional_layanan_dokter:
+          type: string
+          example: "Senin-Jumat"
+        penyedia_layanan_dokter:
+          type: string
+          example: "Puskesmas"
+        penyedia_transportasi_layanan_dokter:
+          type: string
+          example: "Ambulans"
+        ketersediaan_layanan_bidan:
+          type: string
+          example: "Ada"
+        hari_operasional_layanan_bidan:
+          type: string
+          example: "24 jam"
+        penyedia_layanan_bidan:
+          type: string
+          example: "Bidan Desa"
+        penyedia_transportasi_layanan_bidan:
+          type: string
+          example: "Kendaraan Pribadi"
+        ketersediaan_layanan_tenaga_kesehatan:
+          type: string
+          example: "Ada"
+        hari_operasional_layanan_tenaga_kesehatan:
+          type: string
+          example: "Senin-Sabtu"
+        penyedia_layanan_tenaga_kesehatan:
+          type: string
+          example: "Kader Kesehatan"
+        penyedia_transportasi_layanan_tenaga_kesehatan:
+          type: string
+          example: "Ojek"
+        persentase_peserta_jaminan_kesehatan:
+          type: string
+          example: "85%"
+        kegiatan_sosialisasi_jaminan_kesehatan:
+          type: string
+          example: "Ada"
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Year of data
+          example: 2024
+        
+    AddSubDimensionUtilitasDasarRequest:
+      type: object
+      required:
+        - operasional_air_minum
+        - ketersediaan_air_minum
+        - kemudahan_akses_air_minum
+        - kualitas_air_minum
+        - persentase_rumah_tidak_layak_huni
+      properties:
+        operasional_air_minum:
+          type: string
+          example: "24 jam"
+        ketersediaan_air_minum:
+          type: string
+          example: "Ada"
+        kemudahan_akses_air_minum:
+          type: string
+          example: "Mudah"
+        kualitas_air_minum:
+          type: string
+          example: "Baik"
+        persentase_rumah_tidak_layak_huni:
+          type: string
+          example: "5%"
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Year of data
+          example: 2024
+
+    AddSubDimensionAktivitasRequest:
+      type: object
+      required:
+        - kearifan_budaya_sosial
+        - kearifan_budaya_sosial_dipertahankan
+        - kegiatan_gotong_royong
+        - frekuensi_gotong_royong
+        - keterlibatan_warga_gotong_royong
+        - frekuensi_kegiatan_olahraga
+        - penyelesaian_konflik_secara_damai
+        - peran_aparat_keamanan_mediator
+        - peran_aparat_pemerintah
+        - peran_tokoh_masyarakat
+        - peran_tokoh_agama
+        - satuan_keamanan_lingkungan
+        - aktivitas_satuan_keamanan_lingkungan
+      properties:
+        kearifan_budaya_sosial:
+          type: string
+          example: "Ada"
+        kearifan_budaya_sosial_dipertahankan:
+          type: string
+          example: "Ya"
+        kegiatan_gotong_royong:
+          type: string
+          example: "Ada"
+        frekuensi_gotong_royong:
+          type: string
+          example: "Mingguan"
+        keterlibatan_warga_gotong_royong:
+          type: string
+          example: "Tinggi"
+        frekuensi_kegiatan_olahraga:
+          type: string
+          example: "2x seminggu"
+        penyelesaian_konflik_secara_damai:
+          type: string
+          example: "Ada"
+        peran_aparat_keamanan_mediator:
+          type: string
+          example: "Aktif"
+        peran_aparat_pemerintah:
+          type: string
+          example: "Aktif"
+        peran_tokoh_masyarakat:
+          type: string
+          example: "Aktif"
+        peran_tokoh_agama:
+          type: string
+          example: "Aktif"
+        satuan_keamanan_lingkungan:
+          type: string
+          example: "Ada"
+        aktivitas_satuan_keamanan_lingkungan:
+          type: string
+          example: "Patroli rutin"
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Year of data
+          example: 2024
+
+    AddSubDimensionFasilitasMasyarakatRequest:
+      type: object
+      required:
+        - terdapat_taman_bacaan_masyarakat
+        - hari_operasional_taman_bacaan_masyarakat
+        - ketersediaan_fasilitas_olahraga
+        - keberadaan_ruang_publik_terbuka
+      properties:
+        terdapat_taman_bacaan_masyarakat:
+          type: string
+          example: "Ada"
+        hari_operasional_taman_bacaan_masyarakat:
+          type: string
+          example: "Senin-Sabtu"
+        ketersediaan_fasilitas_olahraga:
+          type: string
+          example: "Ada"
+        keberadaan_ruang_publik_terbuka:
+          type: string
+          example: "Ada"
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Year of data
+          example: 2024
+
+    AddSubDimensionProduksiDesaRequest:
+      type: object
+      required:
+        - keragaman_aktivitas_ekonomi
+        - keaktifan_aktivitas_ekonomi
+        - ketersediaan_produk_unggulan_desa
+        - cakupan_pasar_produk_unggulan
+        - ketersediaan_merek_dagang
+        - terdapat_kearifan_lokal_ekonomi
+        - telah_dilakukan_kerja_sama_dengan_desa_lainnya
+        - telah_dilakukan_kerja_sama_dengan_pihak_ketiga
+      properties:
+        keragaman_aktivitas_ekonomi:
+          type: string
+          example: "Beragam"
+        keaktifan_aktivitas_ekonomi:
+          type: string
+          example: "Aktif"
+        ketersediaan_produk_unggulan_desa:
+          type: string
+          example: "Ada"
+        cakupan_pasar_produk_unggulan:
+          type: string
+          example: "Regional"
+        ketersediaan_merek_dagang:
+          type: string
+          example: "Ada"
+        terdapat_kearifan_lokal_ekonomi:
+          type: string
+          example: "Ada"
+        telah_dilakukan_kerja_sama_dengan_desa_lainnya:
+          type: string
+          example: "Ya"
+        telah_dilakukan_kerja_sama_dengan_pihak_ketiga:
+          type: string
+          example: "Ya"
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Year of data
+          example: 2024
+
+    AddSubDimensionFasilitasPendukungEkonomiRequest:
+      type: object
+      required:
+        - ketersediaan_pendidikan_non_formal
+        - keterlibatan_pendidikan_non_formal
+        - ketersediaan_pasar_rakyat
+        - kemudahan_akses_pasar_rakyat
+        - ketersediaan_toko
+        - kemudahan_akses_toko
+        - ketersediaan_rumah_makan
+        - kemudahan_akses_rumah_makan
+        - ketersediaan_penginapan
+        - kemudahan_akses_penginapan
+        - ketersediaan_logistik
+        - kemudahan_akses_logistik
+        - terdapat_bumd
+        - bumd_berbadan_hukum
+        - hari_operasional_lembaga_ekonomi
+        - ketersediaan_lembaga_ekonomi_lainnya
+        - ketersediaan_kud
+        - ketersediaan_umkm
+        - layanan_perbankan
+        - hari_operasional_keuangan
+        - layanan_fasilitas_kredit_kur
+        - layanan_fasilitas_kredit_kkp_e
+        - layanan_fasilitas_kredit_kuk
+        - status_layanan_fasilitas_kredit
+      properties:
+        ketersediaan_pendidikan_non_formal:
+          type: string
+          example: "Ada"
+        keterlibatan_pendidikan_non_formal:
+          type: string
+          example: "Tinggi"
+        ketersediaan_pasar_rakyat:
+          type: string
+          example: "Ada"
+        kemudahan_akses_pasar_rakyat:
+          type: string
+          example: "Mudah"
+        ketersediaan_toko:
+          type: string
+          example: "Ada"
+        kemudahan_akses_toko:
+          type: string
+          example: "Mudah"
+        ketersediaan_rumah_makan:
+          type: string
+          example: "Ada"
+        kemudahan_akses_rumah_makan:
+          type: string
+          example: "Mudah"
+        ketersediaan_penginapan:
+          type: string
+          example: "Ada"
+        kemudahan_akses_penginapan:
+          type: string
+          example: "Mudah"
+        ketersediaan_logistik:
+          type: string
+          example: "Ada"
+        kemudahan_akses_logistik:
+          type: string
+          example: "Mudah"
+        terdapat_bumd:
+          type: string
+          example: "Ada"
+        bumd_berbadan_hukum:
+          type: string
+          example: "Ya"
+        hari_operasional_lembaga_ekonomi:
+          type: string
+          example: "Senin-Sabtu"
+        ketersediaan_lembaga_ekonomi_lainnya:
+          type: string
+          example: "Ada"
+        ketersediaan_kud:
+          type: string
+          example: "Ada"
+        ketersediaan_umkm:
+          type: string
+          example: "Ada"
+        layanan_perbankan:
+          type: string
+          example: "Ada"
+        hari_operasional_keuangan:
+          type: string
+          example: "Senin-Jumat"
+        layanan_fasilitas_kredit_kur:
+          type: string
+          example: "Ada"
+        layanan_fasilitas_kredit_kkp_e:
+          type: string
+          example: "Ada"
+        layanan_fasilitas_kredit_kuk:
+          type: string
+          example: "Ada"
+        status_layanan_fasilitas_kredit:
+          type: string
+          example: "Aktif"
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Year of data
+          example: 2024
+
+    AddSubDimensionPengelolaanLingkunganRequest:
+      type: object
+      required:
+        - upaya_menjaga_kelestarian_lingkungan
+        - regulasi_pelestarian_lingkungan
+        - kegiatan_pelestarian_lingkungan
+        - pemanfaatan_energi_terbarukan
+        - tempat_pembuanangan_sampah
+        - pengelolaan_sampah
+        - pemanfaatan_sampah
+        - kejadian_pencemaran_lingkungan
+        - ketersediaan_jamban
+        - keberfungsian_jamban
+        - ketersediaan_septic_tank
+        - pembuangan_air_limbah_cair_rumah
+      properties:
+        upaya_menjaga_kelestarian_lingkungan:
+          type: string
+          example: "Ada"
+        regulasi_pelestarian_lingkungan:
+          type: string
+          example: "Ada"
+        kegiatan_pelestarian_lingkungan:
+          type: string
+          example: "Ada"
+        pemanfaatan_energi_terbarukan:
+          type: string
+          example: "Ada"
+        tempat_pembuanangan_sampah:
+          type: string
+          example: "Ada"
+        pengelolaan_sampah:
+          type: string
+          example: "Baik"
+        pemanfaatan_sampah:
+          type: string
+          example: "Ada"
+        kejadian_pencemaran_lingkungan:
+          type: string
+          example: "Tidak ada"
+        ketersediaan_jamban:
+          type: string
+          example: "Ada"
+        keberfungsian_jamban:
+          type: string
+          example: "Berfungsi"
+        ketersediaan_septic_tank:
+          type: string
+          example: "Ada"
+        pembuangan_air_limbah_cair_rumah:
+          type: string
+          example: "Baik"
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Year of data
+          example: 2024
+
+    AddSubDimensionPenanggulanganBencanaRequest:
+      type: object
+      required:
+        - aspek_informasi_kebencanaan
+        - fasilitas_mitigasi_bencana
+        - akses_menuju_fasilitas_mitigasi_bencana
+        - aktivitas_mitigasi
+        - fasilitas_tanggap_darurat_bencana
+      properties:
+        aspek_informasi_kebencanaan:
+          type: string
+          example: "Ada"
+        fasilitas_mitigasi_bencana:
+          type: string
+          example: "Ada"
+        akses_menuju_fasilitas_mitigasi_bencana:
+          type: string
+          example: "Mudah"
+        aktivitas_mitigasi:
+          type: string
+          example: "Ada"
+        fasilitas_tanggap_darurat_bencana:
+          type: string
+          example: "Ada"
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Year of data
+          example: 2024
+
+    AddSubDimensionKondisiAksesJalanRequest:
+      type: object
+      required:
+        - jenis_permukaan_jalan
+        - kualitas_jalan
+        - penerangan_jalan_utama
+        - operasional_pju
+      properties:
+        jenis_permukaan_jalan:
+          type: string
+          example: "Aspal"
+        kualitas_jalan:
+          type: string
+          example: "Baik"
+        penerangan_jalan_utama:
+          type: string
+          example: "Ada"
+        operasional_pju:
+          type: string
+          example: "Berfungsi"
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Year of data
+          example: 2024
+
+    AddSubDimensionKemudahanAksesRequest:
+      type: object
+      required:
+        - angkutan_perdesaan
+        - operasional_angkutan_perdesaan
+        - pelayanan_listrik
+        - durasi_layanan_listrik
+        - akses_telepon
+        - akses_internet
+      properties:
+        angkutan_perdesaan:
+          type: string
+          example: "Ada"
+        operasional_angkutan_perdesaan:
+          type: string
+          example: "Aktif"
+        pelayanan_listrik:
+          type: string
+          example: "Ada"
+        durasi_layanan_listrik:
+          type: string
+          example: "24 jam"
+        akses_telepon:
+          type: string
+          example: "Ada"
+        akses_internet:
+          type: string
+          example: "Ada"
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Year of data
+          example: 2024
+
+    AddSubDimensionKelembagaanPelayananDesaRequest:
+      type: object
+      required:
+        - layanan_diberikan
+        - publikasi_informasi_pelayanan
+        - pelayanan_administrasi
+        - pelayanan_pengaduan
+        - pelayanan_lainnya
+        - musyawarah_desa
+        - musyawarah_desa_didatangi_unsur_masyarakat
+      properties:
+        layanan_diberikan:
+          type: string
+          example: "Ada"
+        publikasi_informasi_pelayanan:
+          type: string
+          example: "Ada"
+        pelayanan_administrasi:
+          type: string
+          example: "Ada"
+        pelayanan_pengaduan:
+          type: string
+          example: "Ada"
+        pelayanan_lainnya:
+          type: string
+          example: "Ada"
+        musyawarah_desa:
+          type: string
+          example: "Ada"
+        musyawarah_desa_didatangi_unsur_masyarakat:
+          type: string
+          example: "Ya"
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Year of data
+          example: 2024
+
+    AddSubDimensionTataKelolaKeuanganDesaRequest:
+      type: object
+      required:
+        - pendapatan_asli_desa
+        - peningkatan_pades
+        - penyertaan_modal_dd_bumd
+        - aset_tanah_desa
+        - aset_kantor_desa
+        - aset_pasar_desa
+        - aset_lainnya
+        - produktivitas_aset_desa
+        - inventarisasi_aset_desa
+      properties:
+        pendapatan_asli_desa:
+          type: string
+          example: "Ada"
+        peningkatan_pades:
+          type: string
+          example: "Ya"
+        penyertaan_modal_dd_bumd:
+          type: string
+          example: "Ada"
+        aset_tanah_desa:
+          type: string
+          example: "Ada"
+        aset_kantor_desa:
+          type: string
+          example: "Ada"
+        aset_pasar_desa:
+          type: string
+          example: "Ada"
+        aset_lainnya:
+          type: string
+          example: "Ada"
+        produktivitas_aset_desa:
+          type: string
+          example: "Produktif"
+        inventarisasi_aset_desa:
+          type: string
+          example: "Lengkap"
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Year of data
+          example: 2024
+
+    # Dashboard DTOs
+    GetDashboardResponse:
+      type: object
+      properties:
+        totalKeluarga:
+          type: integer
+          format: int32
+          description: Total number of families
+          example: 150
+        totalPenduduk:
+          type: integer
+          format: int32
+          description: Total population
+          example: 600
+        rerataKeluarga:
+          type: number
+          format: float
+          description: Average family size
+          example: 4.0
+        lakiLaki:
+          type: integer
+          format: int32
+          description: Total male population
+          example: 300
+        perempuan:
+          type: integer
+          format: int32
+          description: Total female population
+          example: 300
+        kepalaKeluarga:
+          type: integer
+          format: int32
+          description: Total heads of families
+          example: 150
+        rerataUmur:
+          type: number
+          format: float
+          description: Average age
+          example: 35.5
+        rt:
+          type: integer
+          format: int32
+          description: Total RT (neighborhood units)
+          example: 5
+        rw:
+          type: integer
+          format: int32
+          description: Total RW (community units)
+          example: 2
+        kelurahan:
+          type: integer
+          format: int32
+          description: Total kelurahan
+          example: 1
+        kecamatan:
+          type: integer
+          format: int32
+          description: Total kecamatan
+          example: 1
+
+paths:
+  # Root endpoint
+  /:
+    get:
+      tags:
+        - Health Check
+      summary: API health check
+      description: Returns API status message
+      security: []
+      responses:
+        '200':
+          description: API is running
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Apps-I Desa API!
+
+  # Authentication endpoints
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and return JWT token in cookie
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          headers:
+            Set-Cookie:
+              description: Authentication cookie
+              schema:
+                type: string
+                example: AppsIDesaCookie=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/; HttpOnly
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid request body or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: Logout user and clear authentication cookie
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  # User endpoints
+  /api/users/register:
+    post:
+      tags:
+        - Users
+      summary: Register new user
+      description: Register a new user account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid request or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '409':
+          description: Username already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Village endpoints
+  /api/villages:
+    post:
+      tags:
+        - Villages
+      summary: Create village
+      description: Add a new village
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddVillageRequest'
+      responses:
+        '201':
+          description: Village created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateVillageResponse'
+        '400':
+          description: Invalid request or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Family Card endpoints
+  /api/family-cards:
+    get:
+      tags:
+        - Family Cards
+      summary: Get all family cards
+      description: Retrieve list of all family cards for the authenticated user's village
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Family cards retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllFamilyCardsResponse'
+        '400':
+          description: Village ID is required or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to retrieve family cards
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Family Cards
+      summary: Add new family card
+      description: Create a new family card record
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddFamilyCardRequest'
+      responses:
+        '201':
+          description: Family card created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input data or village ID required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '409':
+          description: Family card with this NIK already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to create family card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/family-cards/{id}:
+    get:
+      tags:
+        - Family Cards
+      summary: Get family card by ID
+      description: Retrieve family card information with all family members by family card NIK
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{16}$'
+          description: Family card NIK (16 digits)
+      responses:
+        '200':
+          description: Family card found with all members
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllFamilyMember'
+        '400':
+          description: Family card ID is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Family card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to retrieve family card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Villager endpoints
+  /api/villagers:
+    post:
+      tags:
+        - Villagers
+      summary: Add new villager
+      description: Create a new villager record
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddVillagerRequest'
+      responses:
+        '201':
+          description: Villager created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input data or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '409':
+          description: Villager with the same NIK already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to create villager
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/villagers/{nik}:
+    get:
+      tags:
+        - Villagers
+      summary: Get villager by NIK
+      description: Retrieve villager information by NIK
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: nik
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{16}$'
+          description: 16-digit NIK
+      responses:
+        '200':
+          description: Villager found successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVillagerResponse'
+        '400':
+          description: NIK is required or invalid format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Villager not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to retrieve villager
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags:
+        - Villagers
+      summary: Update villager
+      description: Update villager information by NIK
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: nik
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{16}$'
+            description: 16-digit NIK
+      requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateVillagerRequest'
+      responses:
+        '200':
+          description: Villager updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input data or NIK format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '404':
+          description: Villager not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Villager with the same NIK already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to update villager
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Villagers
+      summary: Delete villager
+      description: Delete villager by NIK
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: nik
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{16}$'
+            description: 16-digit NIK
+      responses:
+        '200':
+          description: Villager deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: NIK is required or invalid format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Villager not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to delete villager
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Sub-dimension endpoints
+  /api/sub-dimensions/pendidikan:
+    post:
+      tags:
+        - Sub Dimensions
+      summary: Add education sub-dimension data
+      description: Create education sub-dimension record for village development indicators
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSubDimensionPendidikanRequest'
+      responses:
+        '201':
+          description: Education data created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Failed to create sub-dimension pendidikan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sub-dimensions/kesehatan:
+    post:
+      tags:
+        - Sub Dimensions
+      summary: Add health sub-dimension data
+      description: Create health sub-dimension record for village development indicators
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSubDimensionKesehatanRequest'
+      responses:
+        '201':
+          description: Health data created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Failed to create sub-dimension kesehatan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sub-dimensions/utilitas-dasar:
+    post:
+      tags:
+        - Sub Dimensions
+      summary: Add basic utilities sub-dimension data
+      description: Create basic utilities sub-dimension record
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSubDimensionUtilitasDasarRequest'
+      responses:
+        '201':
+          description: Basic utilities data created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Failed to create sub-dimension utilitas dasar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sub-dimensions/aktivitas:
+    post:
+      tags:
+        - Sub Dimensions
+      summary: Add activities sub-dimension data
+      description: Create activities sub-dimension record
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSubDimensionAktivitasRequest'
+      responses:
+        '201':
+          description: Activities data created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Failed to create sub-dimension aktivitas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sub-dimensions/fasilitas-masyarakat:
+    post:
+      tags:
+        - Sub Dimensions
+      summary: Add community facilities sub-dimension data
+      description: Create community facilities sub-dimension record
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSubDimensionFasilitasMasyarakatRequest'
+      responses:
+        '201':
+          description: Community facilities data created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Failed to create sub-dimension fasilitas masyarakat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sub-dimensions/produksi-desa:
+    post:
+      tags:
+        - Sub Dimensions
+      summary: Add village production sub-dimension data
+      description: Create village production sub-dimension record
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSubDimensionProduksiDesaRequest'
+      responses:
+        '201':
+          description: Village production data created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Failed to create sub-dimension produksi desa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sub-dimensions/fasilitas-pendukung-ekonomi:
+    post:
+      tags:
+        - Sub Dimensions
+      summary: Add economic support facilities sub-dimension data
+      description: Create economic support facilities sub-dimension record
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSubDimensionFasilitasPendukungEkonomiRequest'
+      responses:
+        '201':
+          description: Economic support facilities data created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Failed to create sub-dimension fasilitas pendukung ekonomi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sub-dimensions/pengelolaan-lingkungan:
+    post:
+      tags:
+        - Sub Dimensions
+      summary: Add environmental management sub-dimension data
+      description: Create environmental management sub-dimension record
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSubDimensionPengelolaanLingkunganRequest'
+      responses:
+        '201':
+          description: Environmental management data created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Failed to create sub-dimension pengelolaan lingkungan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sub-dimensions/penanggulangan-bencana:
+      post:
+        tags:
+          - Sub Dimensions
+        summary: Add disaster management sub-dimension data
+        description: Create disaster management sub-dimension record
+        security:
+          - cookieAuth: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddSubDimensionPenanggulanganBencanaRequest'
+        responses:
+          '201':
+            description: Disaster management data created successfully
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/MessageResponse'
+          '400':
+            description: Invalid input data
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ValidationError'
+          '500':
+            description: Failed to create sub-dimension penanggulangan bencana
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sub-dimensions/kondisi-akses-jalan:
+      post:
+        tags:
+          - Sub Dimensions
+        summary: Add road access condition sub-dimension data
+        description: Create road access condition sub-dimension record
+        security:
+          - cookieAuth: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddSubDimensionKondisiAksesJalanRequest'
+        responses:
+          '201':
+            description: Road access condition data created successfully
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/MessageResponse'
+          '400':
+            description: Invalid input data
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ValidationError'
+          '500':
+            description: Failed to create sub-dimension kondisi akses jalan
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sub-dimensions/kemudahan-akses:
+      post:
+        tags:
+          - Sub Dimensions
+        summary: Add access convenience sub-dimension data
+        description: Create access convenience sub-dimension record
+        security:
+          - cookieAuth: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddSubDimensionKemudahanAksesRequest'
+        responses:
+          '201':
+            description: Access convenience data created successfully
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/MessageResponse'
+          '400':
+            description: Invalid input data
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ValidationError'
+          '500':
+            description: Failed to create sub-dimension kemudahan akses
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sub-dimensions/kelembagaan-pelayanan-desa:
+      post:
+        tags:
+          - Sub Dimensions
+        summary: Add village service institution sub-dimension data
+        description: Create village service institution sub-dimension record
+        security:
+          - cookieAuth: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddSubDimensionKelembagaanPelayananDesaRequest'
+        responses:
+          '201':
+            description: Village service institution data created successfully
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/MessageResponse'
+          '400':
+            description: Invalid input data
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ValidationError'
+          '500':
+            description: Failed to create sub-dimension kelembagaan pelayanan desa
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sub-dimensions/tata-kelola-keuangan-desa:
+      post:
+        tags:
+          - Sub Dimensions
+        summary: Add village financial governance sub-dimension data
+        description: Create village financial governance sub-dimension record
+        security:
+          - cookieAuth: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddSubDimensionTataKelolaKeuanganDesaRequest'
+        responses:
+          '201':
+            description: Village financial governance data created successfully
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/MessageResponse'
+          '400':
+            description: Invalid input data
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ValidationError'
+          '500':
+            description: Failed to create sub-dimension tata kelola keuangan desa
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+
+  # Dashboard endpoints
+  /api/dashboard:
+    get:
+      tags:
+        - Dashboard
+      summary: Get dashboard statistics
+      description: Retrieve comprehensive village statistics including population, families, and demographics
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Dashboard statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDashboardResponse'
+        '400':
+          description: Village ID is required or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to retrieve dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'

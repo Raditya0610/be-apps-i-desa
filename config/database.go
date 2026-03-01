@@ -83,9 +83,15 @@ func ConnectDB() *gorm.DB {
 	sqlDB.SetConnMaxLifetime(10 * time.Minute) // Shorter lifetime for serverless
 	sqlDB.SetConnMaxIdleTime(3 * time.Minute)  // Shorter idle time to free resources
 
-	// Run migrations
-	if err := migrateDB(DB); err != nil {
-		log.Fatal("Database migration failed: ", err)
+	// Run migrations (Skip in production to avoid cold-start lag and heavy Aiven DB queries)
+	env := os.Getenv("APP_ENV")
+	if env != "production" {
+		log.Info("Running Database Migrations...")
+		if err := migrateDB(DB); err != nil {
+			log.Fatal("Database migration failed: ", err)
+		}
+	} else {
+		log.Info("Skipping AutoMigrate for Production Environment")
 	}
 
 	log.Info("Successfully connected to the database", dsn)

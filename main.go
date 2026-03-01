@@ -31,14 +31,40 @@ func main() {
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			// DT-03 Security Gate: Hide error details in production
+			env := os.Getenv("APP_ENV")
+			errorMessage := "Internal Server Error"
+
+			if env == "development" {
+				errorMessage = err.Error() // Show raw error only in dev
+			}
+
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": err.Error(),
+				"success": false,
+				"message": errorMessage,
 			})
 		},
 	})
 
 	app.Use(logger.New())
 	app.Use(recover.New())
+
+	// Custom 404 handler (untuk DT-07 Error Page Check)
+	app.Use(func(c *fiber.Ctx) error {
+		// Jika route tidak ditemukan dan bukan endpoint api yang valid
+		if err := c.Next(); err != nil {
+			return err
+		}
+
+		// Tangkap 404
+		if c.Response().StatusCode() == 404 {
+			return c.Status(404).JSON(fiber.Map{
+				"success": false,
+				"message": "Endpoint tidak ditemukan (404 Not Found)",
+			})
+		}
+		return nil
+	})
 
 	// Read allowed origins from env (comma-separated), fallback to wildcard for local dev
 	allowedOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")

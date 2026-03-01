@@ -33,13 +33,26 @@ func main() {
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			// DT-03 Security Gate: Hide error details in production
 			env := os.Getenv("APP_ENV")
+
+			// Default ke 500
+			code := fiber.StatusInternalServerError
 			errorMessage := "Internal Server Error"
 
-			if env == "development" {
-				errorMessage = err.Error() // Show raw error only in dev
+			// Cek apakah ini error internal bawaan Fiber (seperti 404 Not Found)
+			if e, ok := err.(*fiber.Error); ok {
+				code = e.Code
+				errorMessage = e.Message
+			} else if env == "development" {
+				// Kalau bukan error HTTP biasa dan env=development, tampilkan error asli golang
+				errorMessage = err.Error()
 			}
 
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			// Custom 404 Message buat DT-07
+			if code == fiber.StatusNotFound {
+				errorMessage = "Endpoint tidak ditemukan (404 Not Found)"
+			}
+
+			return c.Status(code).JSON(fiber.Map{
 				"success": false,
 				"message": errorMessage,
 			})
@@ -48,23 +61,6 @@ func main() {
 
 	app.Use(logger.New())
 	app.Use(recover.New())
-
-	// Custom 404 handler (untuk DT-07 Error Page Check)
-	app.Use(func(c *fiber.Ctx) error {
-		// Jika route tidak ditemukan dan bukan endpoint api yang valid
-		if err := c.Next(); err != nil {
-			return err
-		}
-
-		// Tangkap 404
-		if c.Response().StatusCode() == 404 {
-			return c.Status(404).JSON(fiber.Map{
-				"success": false,
-				"message": "Endpoint tidak ditemukan (404 Not Found)",
-			})
-		}
-		return nil
-	})
 
 	// Read allowed origins from env (comma-separated), fallback to wildcard for local dev
 	allowedOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")

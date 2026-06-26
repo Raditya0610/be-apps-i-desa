@@ -22,8 +22,8 @@ type Villager struct {
 	NomorKitas       *string   `gorm:"size:20"`          // Optional field for foreign nationals
 	NamaAyah         string    `gorm:"size:100;not null"`
 	NamaIbu          string    `gorm:"size:100;not null"`
-	VillageID        uuid.UUID `gorm:"type:uuid;not null"`
-	FamilyCardID     string    `gorm:"not null"`
+	VillageID        uuid.UUID `gorm:"type:uuid;not null;index"`
+	FamilyCardID     string    `gorm:"not null;index"`
 	CreatedAt        time.Time `gorm:"autoCreateTime"`
 	UpdatedAt        time.Time `gorm:"autoUpdateTime"`
 

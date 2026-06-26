@@ -6,6 +6,7 @@ import (
 	"Apps-I_Desa_Backend/dtos"
 	"Apps-I_Desa_Backend/models"
 	"Apps-I_Desa_Backend/repositories"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
@@ -140,22 +141,17 @@ func (s *FamilyCardService) GetAllFamilyCardsByVillageID(
 
 	var response dtos.GetAllFamilyCardsResponse
 	for _, card := range familyCards {
-		villagers, err := s.villagerRepo.GetVillagersByFamilyCardNIK(&card.NIK)
-		if err != nil {
-			log.Error("Error getting villagers for family card:", err)
-			return nil, errors.New("failed to get villagers for family card")
-		}
 		var kepalaKeluarga string
-		for _, villager := range villagers {
+		for _, villager := range card.Villagers {
 			if villager.StatusHubungan == "Kepala Keluarga" {
-				kepalaKeluarga = villager.Name
+				kepalaKeluarga = villager.NamaLengkap
 				break
 			}
 		}
 		response.FamilyCards = append(response.FamilyCards, dtos.GetFamilyCardResponse{
 			NIK:          card.NIK,
 			Name:         &kepalaKeluarga,
-			TotalMembers: len(villagers),
+			TotalMembers: len(card.Villagers),
 		})
 	}
 

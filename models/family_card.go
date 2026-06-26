@@ -18,7 +18,7 @@ type FamilyCard struct {
 	Provinsi      string    `gorm:"size:50;not null"`
 	CreatedAt     time.Time `gorm:"autoCreateTime"`
 	UpdatedAt     time.Time `gorm:"autoUpdateTime"`
-	VillageID     uuid.UUID `gorm:"type:uuid;not null"`
+	VillageID     uuid.UUID `gorm:"type:uuid;not null;index"`
 
 	// Belongs to Village
 	Village Village `gorm:"foreignKey:VillageID"`

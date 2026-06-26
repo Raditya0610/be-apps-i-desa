@@ -68,11 +68,14 @@ func main() {
 		allowedOrigins = "*"
 	}
 
+	// AllowCredentials cannot be true when AllowOrigins is "*" (CORS spec rejects it)
+	allowCredentials := allowedOrigins != "*"
+
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     allowedOrigins,
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS,PATCH",
 		AllowHeaders:     "Origin,Content-Type,Accept,Authorization,Cookie",
-		AllowCredentials: true,
+		AllowCredentials: allowCredentials,
 		ExposeHeaders:    "Set-Cookie",
 	}))
 

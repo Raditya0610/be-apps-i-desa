@@ -42,7 +42,7 @@ func (r *VillagerRepository) GetVillagersByFamilyCardNIK(
 	familyCardNIK *string,
 ) ([]*dtos.GetFamilyMember, error) {
 	var villagers []*models.Villager
-	err := r.DB.Where("family_card_id = ?", &familyCardNIK).Find(&villagers).Error
+	err := r.DB.Where("family_card_id = ?", familyCardNIK).Find(&villagers).Error
 	if err != nil {
 		return nil, err
 	}

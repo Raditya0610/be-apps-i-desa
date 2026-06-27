@@ -141,17 +141,11 @@ func (s *FamilyCardService) GetAllFamilyCardsByVillageID(
 
 	var response dtos.GetAllFamilyCardsResponse
 	for _, card := range familyCards {
-		var kepalaKeluarga string
-		for _, villager := range card.Villagers {
-			if villager.StatusHubungan == "Kepala Keluarga" {
-				kepalaKeluarga = villager.NamaLengkap
-				break
-			}
-		}
+		name := card.KepalaKeluarga
 		response.FamilyCards = append(response.FamilyCards, dtos.GetFamilyCardResponse{
 			NIK:          card.NIK,
-			Name:         &kepalaKeluarga,
-			TotalMembers: len(card.Villagers),
+			Name:         &name,
+			TotalMembers: card.TotalMembers,
 		})
 	}
 

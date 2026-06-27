@@ -40,15 +40,29 @@ func (r *FamilyCardRepository) GetNIKAndAddressByNIK(nik string) (*dtos.GetAllFa
 	}, nil
 }
 
+type FamilyCardSummary struct {
+	NIK            string
+	KepalaKeluarga string
+	TotalMembers   int
+}
+
 func (r *FamilyCardRepository) GetAllFamilyCardsByVillageID(
 	villageID *uuid.UUID,
-) ([]*models.FamilyCard, error) {
-	var familyCards []*models.FamilyCard
-	err := r.DB.Preload("Villagers").Where("village_id = ?", villageID).Find(&familyCards).Error
+) ([]*FamilyCardSummary, error) {
+	var results []*FamilyCardSummary
+	err := r.DB.Model(&models.FamilyCard{}).
+		Select(`family_cards.nik,
+			COALESCE(v_head.nama_lengkap, '') AS kepala_keluarga,
+			COUNT(v_all.nik) AS total_members`).
+		Joins("LEFT JOIN villagers v_head ON v_head.family_card_id = family_cards.nik AND v_head.status_hubungan = 'Kepala Keluarga'").
+		Joins("LEFT JOIN villagers v_all ON v_all.family_card_id = family_cards.nik").
+		Where("family_cards.village_id = ?", villageID).
+		Group("family_cards.nik, v_head.nama_lengkap").
+		Scan(&results).Error
 	if err != nil {
 		return nil, err
 	}
-	return familyCards, nil
+	return results, nil
 }
 
 func (r *FamilyCardRepository) GetFamilyCardByNIK(nik *string) (*models.FamilyCard, error) {

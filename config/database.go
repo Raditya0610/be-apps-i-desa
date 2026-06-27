@@ -76,12 +76,11 @@ func ConnectDB() *gorm.DB {
 		log.Fatal("Failed to get database connection pool: ", err)
 	}
 
-	// Configure connection pool for serverless/limited connections
-	// In serverless environments, each instance should use minimal connections
-	sqlDB.SetMaxOpenConns(2)                   // Maximum 2 connections per instance
-	sqlDB.SetMaxIdleConns(1)                   // Keep 1 idle connection for reuse
-	sqlDB.SetConnMaxLifetime(10 * time.Minute) // Shorter lifetime for serverless
-	sqlDB.SetConnMaxIdleTime(3 * time.Minute)  // Shorter idle time to free resources
+	// Configure connection pool
+	sqlDB.SetMaxOpenConns(10)                  // Enough for concurrent requests
+	sqlDB.SetMaxIdleConns(5)                   // Keep connections warm
+	sqlDB.SetConnMaxLifetime(10 * time.Minute)
+	sqlDB.SetConnMaxIdleTime(3 * time.Minute)
 
 	// Run migrations (Skip in production to avoid cold-start lag and heavy Aiven DB queries)
 	env := os.Getenv("APP_ENV")
@@ -94,8 +93,28 @@ func ConnectDB() *gorm.DB {
 		log.Info("Skipping AutoMigrate for Production Environment")
 	}
 
+	// Always ensure critical indexes exist — safe to run in production (IF NOT EXISTS)
+	log.Info("Ensuring database indexes...")
+	if err := ensureIndexes(DB); err != nil {
+		log.Fatal("Failed to ensure database indexes: ", err)
+	}
+
 	log.Info("Successfully connected to the database", dsn)
 	return DB
+}
+
+func ensureIndexes(db *gorm.DB) error {
+	indexes := []string{
+		`CREATE INDEX IF NOT EXISTS idx_family_cards_village_id ON family_cards(village_id)`,
+		`CREATE INDEX IF NOT EXISTS idx_villagers_family_card_id ON villagers(family_card_id)`,
+		`CREATE INDEX IF NOT EXISTS idx_villagers_village_id ON villagers(village_id)`,
+	}
+	for _, sql := range indexes {
+		if err := db.Exec(sql).Error; err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func migrateDB(db *gorm.DB) error {
